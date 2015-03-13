@@ -11,15 +11,16 @@ can subscribe to lists by submitting a form on this page:
 
 <img src="md/subscribe.png" />
 
-
 or by subscribing to the Magento newsletter.
-
 
 Installation Instructions
 -------------------------
-Upload files to root of your Magento install. Let the setup script run.
-After the setup is completed, a new table aydus_constantcontact_subscriber_contact
-will be created.
+
+Requires the Constant Contact PHP-SDK: https://github.com/constantcontact/php-sdk
+
+Install the PHP SDK in the above link. Upload this module's files to root of your 
+Magento install. Let the setup script run. After the setup is completed, a new 
+table aydus_constantcontact_subscriber_contact will be created.
 
 In the admin under System -> Configuration -> General -> Constant Contact,
 configure the extension:
