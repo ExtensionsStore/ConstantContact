@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<!-- 
+/**
+ * ConstantContact config
+ * 
+ * @category    Aydus
+ * @package     Aydus_ConstantContact
+ * @author      Aydus <davidt@aydus.com>
+ */
+-->
+<config>
+    <modules>
+        <Aydus_ConstantContact>
+            <version>0.9.0</version>
+        </Aydus_ConstantContact>
+    </modules>
+    <frontend>
+        <routers>
+            <aydus_constantcontact>
+                <use>standard</use>
+                <args>
+                    <module>Aydus_ConstantContact</module>
+                    <frontName>constantcontact</frontName>
+                </args>
+            </aydus_constantcontact>
+        </routers>       
+        <layout>
+            <updates>
+                <aydus_constantcontact module="Aydus_ConstantContact">
+                    <file>aydus/constantcontact.xml</file>
+                </aydus_constantcontact>
+            </updates>
+        </layout>     
+    </frontend>    
+    <global>
+    	<events>
+            <newsletter_subscriber_save_after>
+                <observers>
+                    <constantcontact_observer>
+                        <class>aydus_constantcontact/observer</class>
+                        <method>newsletterSubscriberSaveAfter</method>
+                    </constantcontact_observer>
+                </observers>
+            </newsletter_subscriber_save_after>
+            <newsletter_subscriber_delete_after>
+                <observers>
+                    <constantcontact_observer>
+                        <class>aydus_constantcontact/observer</class>
+                        <method>newsletterUnsubscribe</method>
+                    </constantcontact_observer>
+                </observers>
+            </newsletter_subscriber_delete_after>
+            <customer_save_after>
+                <observers>
+                    <constantcontact_observer>
+                        <class>aydus_constantcontact/observer</class>
+                        <method>updateCustomer</method>
+                    </constantcontact_observer>
+                </observers>
+            </customer_save_after>
+    	</events>
+		<blocks>
+			<aydus_constantcontact>
+				<class>Aydus_ConstantContact_Block</class>
+			</aydus_constantcontact>
+		</blocks>
+		<helpers>
+			<aydus_constantcontact>
+				<class>Aydus_ConstantContact_Helper</class>
+			</aydus_constantcontact>
+		</helpers>
+		<models>
+			<aydus_constantcontact>
+				<class>Aydus_ConstantContact_Model</class>
+                <resourceModel>aydus_constantcontact_resource</resourceModel>
+			</aydus_constantcontact>
+            <aydus_constantcontact_resource>
+                <class>Aydus_ConstantContact_Model_Resource</class>
+                <entities>
+                    <subscribercontact>
+                        <table>aydus_constantcontact_subscriber_contact</table>
+                    </subscribercontact>
+                </entities>
+            </aydus_constantcontact_resource>			
+		</models>
+        <resources>
+            <aydus_constantcontact_setup>
+                <setup>
+                    <module>Aydus_ConstantContact</module>
+                    <class>Mage_Customer_Model_Resource_Setup</class>
+                </setup>
+            </aydus_constantcontact_setup>
+        </resources>
+    </global>
+    <default>
+    	<aydus_constantcontact>
+    		<configuration>
+    			<enabled>1</enabled>
+    		</configuration>
+    	</aydus_constantcontact>
+    </default>     
+</config>
