@@ -11,7 +11,7 @@
 <config>
     <modules>
         <Aydus_ConstantContact>
-            <version>0.9.0</version>
+            <version>0.9.1</version>
         </Aydus_ConstantContact>
     </modules>
     <frontend>
@@ -32,6 +32,18 @@
             </updates>
         </layout>     
     </frontend>    
+    <crontab>
+    	<jobs>
+            <aydus_constantcontact_sync>
+                <schedule>
+                	<cron_expr>0 3 * * *</cron_expr>
+                </schedule>
+                <run>
+                	<model>aydus_constantcontact/cron::syncContacts</model>
+                </run>
+            </aydus_constantcontact_sync>
+    	</jobs>
+    </crontab>
     <global>
     	<events>
             <newsletter_subscriber_save_after>
@@ -80,6 +92,9 @@
                     <subscribercontact>
                         <table>aydus_constantcontact_subscriber_contact</table>
                     </subscribercontact>
+                    <customerlist>
+                        <table>aydus_constantcontact_customer_list</table>
+                    </customerlist>                    
                 </entities>
             </aydus_constantcontact_resource>			
 		</models>

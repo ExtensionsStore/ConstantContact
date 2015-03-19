@@ -56,6 +56,16 @@ $this->run("CREATE TABLE IF NOT EXISTS {$this->getTable('aydus_constantcontact_s
   PRIMARY KEY ( `id` )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 
+//create table to hold customer lists
+$this->run("CREATE TABLE IF NOT EXISTS {$this->getTable('aydus_constantcontact_customer_list')} (
+`id` INT(11) NOT NULL AUTO_INCREMENT,
+`customer_id` INT(11) NOT NULL,
+`list_id` BIGINT(20) NOT NULL,
+`created_at` DATETIME NOT NULL,
+`updated_at` DATETIME NOT NULL,
+PRIMARY KEY ( `id` )
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+
 echo 'ConstantContact setup ended.<br />';
 
 $this->endSetup();

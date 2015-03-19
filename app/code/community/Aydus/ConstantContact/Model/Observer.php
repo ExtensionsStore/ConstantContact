@@ -19,66 +19,9 @@ class Aydus_ConstantContact_Model_Observer
      */
     public function newsletterSubscriberSaveAfter($observer)
     {
-        $model = Mage::getSingleton('aydus_constantcontact/constantcontact');
+        $subscriber = $observer->getSubscriber();
         
-        if ($model->isReady()){
-            
-            $subscriber = $observer->getSubscriber();
-            $subscriberId = $subscriber->getId();
-            $customerId = $subscriber->getCustomerId();
-            
-            if ($customerId){
-            
-                $customer = Mage::getModel('customer/customer');
-                $customer->load($customerId);
-            }
-                        
-            $listId = Mage::helper('aydus_constantcontact')->getGeneralListId();
-            
-            if ($subscriber->getSubscriberStatus() == 1){
-                
-                $data = array();
-                $data['subscriber_id'] = $subscriberId;
-                $data['email'] = $subscriber->getSubscriberEmail();
-                $data['list'] = $listId;
-                
-                if ($customerId && $customer->getId()){
-                
-                    $data['firstname'] = $customer->getFirstname();
-                    $data['lastname'] = $customer->getLastname();
-                }
-                
-                $result = $model->addUpdateContact($data);
-                                
-            } else if ($subscriber->getSubscriberStatus() == 3){
-                
-                if ($customerId && $customer->getId()){
-                    
-                    $contactId = $customer->getContactId();
-                    
-                    if (!$contactId){
-                        
-                        $subscriberContact = Mage::getSingleton('aydus_constantcontact/subscribercontact');
-                        $subscriberContact->load($subscriberId, 'subscriber_id');
-                        $contactId = $subscriberContact->getContactId();
-                    }
-                    
-                    if ($contactId){
-                        
-                        $result = $model->unsubscribe($contactId, $listId, $subscriberId);
-                    }
-                    
-                }    
-                                 
-            }
-            
-            if ($result && $result['error'] === true){
-            
-                Mage::log($result['data'], null, 'aydus_constantcontact.log');
-            
-            } 
-            
-        }
+        $result = Mage::getModel('aydus_constantcontact/constantcontact')->updateSubscriber($subscriber);
         
         return $observer;
     }
@@ -92,43 +35,23 @@ class Aydus_ConstantContact_Model_Observer
      */
     public function newsletterUnsubscribe($observer)
     {
-        $model = Mage::getSingleton('aydus_constantcontact/constantcontact');
-        
-        if ($model->isReady()){
+        $subscriber = $observer->getSubscriber();
             
-            $subscriber = $observer->getSubscriber();
-            $subscriberId = $subscriber->getId();
-            $listId = Mage::helper('aydus_constantcontact')->getGeneralListId();
-            $customerId = $subscriber->getCustomerId();
-            $contactId = false;
+        $result = Mage::getModel('aydus_constantcontact/constantcontact')->updateSubscriber($subscriber);
             
-            if ($customerId){
-            
-                $customer = Mage::getModel('customer/customer');
-                $customer->load($customerId);
-            
-                $contactId = $customer->getContactId();
-            } 
-            
-            if (!$contactId){
-                
-            }
-            
-            $result = $model->unsubscribe($contactId, $listId, $subscriberId);
-            
-            if ($result['error'] === true){
-            
-                Mage::log($result['data'], null, 'aydus_constantcontact.log');
-            }
-            
-        }
-        
         return $observer;        
     }
     
+    /**
+     * 
+     * @param Varien_Event_Observer $observer
+     * @return Varien_Event_Observer
+     */
     public function updateCustomer($observer)
     {
+        $subscriber = $observer->getSubscriber();
         
+        return $observer;        
     }
     
 }
