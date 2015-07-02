@@ -46,43 +46,34 @@ class Aydus_ConstantContact_AjaxController extends Mage_Core_Controller_Front_Ac
      */
     public function subscribeAction()
     {
-        if ($this->_validateFormKey()) {
-            
-            if ($this->_getModel()->isReady()){
+        if ($this->_getModel()->isReady()){
 
-                if ($data = json_decode($this->getRequest()->getPost('data'), true)) {
+            if ($data = json_decode($this->getRequest()->getPost('data'), true)) {
 
-                    try {
-                    
-                        //on success, result contains contact id in data value
-                        $result = $this->_getModel()->addUpdateContact($data);
-                    
-                    } catch(Exception $e){
-                    
-                        $result['error'] = true;
-                        $result['data'] =  $e->getMessage();
-                    }                
-                    
-                } else {
-                    
+                try {
+
+                    //on success, result contains contact id in data value
+                    $result = $this->_getModel()->addUpdateContact($data);
+
+                } catch(Exception $e){
+
                     $result['error'] = true;
-                    $result['data'] =  'No post data';
+                    $result['data'] =  $e->getMessage();
                 }
-            
+
             } else {
-            
+
                 $result['error'] = true;
-                $result['data'] =  'API is not available at this time. Please try again later.';
-            } 
-            
+                $result['data'] =  'No post data';
+            }
+
         } else {
 
             $result['error'] = true;
-            $result['data'] =  'Invalid form key.';
+            $result['data'] =  'API is not available at this time. Please try again later.';
         }
-        
+            
         $this->getResponse()->clearHeaders()->setHeader('Content-type','application/json',true)->setBody(Mage::helper('core')->jsonEncode($result));
-        
     }
 
 }

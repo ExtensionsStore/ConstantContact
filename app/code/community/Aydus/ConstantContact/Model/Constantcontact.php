@@ -53,12 +53,36 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
     }
     
     /**
-     * API is ready
+     * Check if API is available
+     * 
+     * @param int $calls
      * @return boolean
      */
-    public function isReady()
+    public function isReady($calls = 1)
     {
-        return is_object($this->_cc);
+        $helper = Mage::helper('aydus_constantcontact');
+        $rateLimitPerDay = (int)$helper->getRateLimitPerDay();
+        
+        if ($rateLimitPerDay > 0){
+            
+            $currentTransactions = (int)$helper->getCurrentTransactions();
+            
+            $ready = ($currentTransactions < $rateLimitPerDay && is_object($this->_cc)) ? true : false;
+            
+            if ($ready){
+                
+                $helper->incrementTransactions($calls);
+            }
+            
+        } else {
+            
+            Mage::log('No limit set in configuration.', null, 'aydus_constantcontact.log');
+            
+            $ready = false;
+        }
+        
+        
+        return $ready;
     }
     
     /**
@@ -67,26 +91,36 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
      */
     public function getAllLists()
     {
-        if ($this->isReady()){
+        try {
             
-            try {
+            if (!$this->_allLists){
                 
-                if (!$this->_allLists){
+                $cache = Mage::app()->getCache();
+                $cacheKey = strtoupper(get_class($this)).'_LIST';
+                
+                $lists = unserialize($cache->load($cacheKey));
+                
+                if (!$lists){
                     
-                    $lists = $this->_cc->getLists(ACCESS_TOKEN);
-                    Mage::helper('aydus_constantcontact')->quickSort($lists, 'name');
+                    if ($this->isReady()){
+                        
+                        $lists = $this->_cc->getLists(ACCESS_TOKEN);
+                        Mage::helper('aydus_constantcontact')->quickSort($lists, 'name');
+                        
+                        $cache->save(serialize($lists), $cacheKey, array('COLLECTION_DATA'), 86400);
+                    }
                     
-                    $this->_allLists = $lists;
                 }
                 
-                return $this->_allLists;
-                
-            } catch(CtctException $ex){
-            
-                Mage::log($ex->getErrors(), null, 'aydus_constantcontact.log');
+                $this->_allLists = $lists;
             }
             
-        } 
+            return $this->_allLists;
+            
+        } catch(CtctException $ex){
+        
+            Mage::log($ex->getErrors(), null, 'aydus_constantcontact.log');
+        }
         
     } 
     
@@ -110,10 +144,11 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
                 
                     }
                 
-                }                
+                }    
+                            
             } 
             
-        }        
+        }   
         
         return $this->_lists;
     }
@@ -152,73 +187,195 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
     
         if ($this->isReady()){
     
-            $subscriberId = $subscriber->getId();
-            $customerId = $subscriber->getCustomerId();
-            $subscriberEmail = $subscriber->getSubscriberEmail();
-    
-            if ($customerId){
-    
-                $customer = Mage::getModel('customer/customer');
-                $customer->load($customerId);
-            }
-    
-            $listId = Mage::helper('aydus_constantcontact')->getGeneralListId();
-    
-            if ($subscriber->getSubscriberStatus() == 1){
-    
-                $data = array();
-                $data['customer_id'] = $customerId;
-                $data['subscriber_id'] = $subscriberId;
-                $data['email'] = $subscriberEmail;
-                $data['list'] = $listId;
-    
-                if ($customerId && $customer->getId()){
-    
-                    $data['firstname'] = $customer->getFirstname();
-                    $data['lastname'] = $customer->getLastname();
+            try {
+                
+                $subscriberId = $subscriber->getId();
+                $customerId = $subscriber->getCustomerId();
+                $subscriberEmail = $subscriber->getSubscriberEmail();
+                
+                if ($customerId){
+                
+                    $customer = Mage::getModel('customer/customer');
+                    $customer->load($customerId);
                 }
-    
-                $result = $this->addUpdateContact($data);
-    
-            } else if ($subscriber->getSubscriberStatus() == 3){
-    
-                if ($customerId && $customer->getId()){
-    
-                    $contactId = $customer->getContactId();
-    
+                
+                $listId = Mage::helper('aydus_constantcontact')->getGeneralListId();
+                
+                if ($subscriber->getSubscriberStatus() == 1){
+                
+                    $data = array();
+                    $data['customer_id'] = $customerId;
+                    $data['subscriber_id'] = $subscriberId;
+                    $data['email'] = $subscriberEmail;
+                    $data['list'] = $listId;
+                
+                    if ($customerId && $customer->getId()){
+                
+                        $data['firstname'] = $customer->getFirstname();
+                        $data['lastname'] = $customer->getLastname();
+                    }
+                
+                    $result = $this->addUpdateContact($data);
+                
+                } else if ($subscriber->getSubscriberStatus() == 3){
+                
+                    if ($customerId && $customer->getId()){
+                
+                        $contactId = $customer->getContactId();
+                
+                        if (!$contactId){
+                
+                            $subscriberContact = Mage::getSingleton('aydus_constantcontact/subscribercontact');
+                            $subscriberContact->load($subscriberId, 'subscriber_id');
+                            $contactId = $subscriberContact->getContactId();
+                        }
+                
+                    }
+                
+                    //get from CC
                     if (!$contactId){
-    
-                        $subscriberContact = Mage::getSingleton('aydus_constantcontact/subscribercontact');
-                        $subscriberContact->load($subscriberId, 'subscriber_id');
-                        $contactId = $subscriberContact->getContactId();
+                        $contact = $this->getContactByEmail($subscriberEmail);
+                        if ($contact && $contact->id){
+                            $contactId = $contact->id;
+                        }
                     }
-    
-                }
-    
-                //get from CC
-                if (!$contactId){
-                    $contact = $this->getContactByEmail($subscriberEmail);
-                    if ($contact && $contact->id){
-                        $contactId = $contact->id;
+                
+                    if ($contactId){
+                
+                        $result = $this->unsubscribe($contactId, $listId, $subscriberId, $customerId);
                     }
+                
                 }
-    
-                if ($contactId){
-    
-                    $result = $this->unsubscribe($contactId, $listId, $subscriberId, $customerId);
-                }
-    
+                                
+            }catch (Exception $e){
+                Mage::log($e->getMessage(),null,'aydus_constantcontact.log');
             }
     
     
         } else {
     
             $result['error'] = true;
-            $result['data'] = 'API not available.';
+            $result['data'] = 'API is not available.';
         }
     
         return $result;
     }    
+    
+    /**
+     *  Synchronized Newsletter Subscribers with General List
+     */
+    public function syncSubscribersContacts()
+    {
+        $subscribers = Mage::getModel('newsletter/subscriber')->getCollection();
+        $subscribeAr = array();
+        $unsubscribeAr = array();
+        
+        if ($subscribers->getSize()>0){
+        
+            foreach ($subscribers as $subscriber){
+                    
+                $row = array();
+                $row[] = $subscriber->getSubscriberEmail();
+                
+                $customerId = (int)$subscriber->getCustomerId();
+                
+                if ($customerId){
+                    
+                    $customer = Mage::getModel('customer/customer')->load($customerId);
+                    
+                    if ($subscriber->getSubscriberStatus() == 1 && $customer && $customer->getId()){
+                        
+                        $row[] = $customer->getFirstname();
+                        $row[] = $customer->getLastname();
+                    }
+                }
+                
+                if ($subscriber->getSubscriberStatus() == 1){
+                    
+                    $subscribeAr[] = $row;
+                
+                } else if ($subscriber->getSubscriberStatus() == 3){
+                    
+                    $unsubscribeAr[] = $row;
+                }
+                
+            }
+            
+            $listId = Mage::helper('aydus_constantcontact')->getGeneralListId();
+            
+            if (!file_exists('var/export/aydus/constantcontact')){
+                mkdir('var/export/aydus/constantcontact',0755,true);
+            }
+            
+            if (count($subscribeAr)>0){
+                
+                if ($this->isReady()){
+                    
+                    try {
+                        $subscribeRows = "Email,First Name,Last Name\n";
+                    
+                        foreach ($subscribeAr as $row){
+                            $subscribeRows .= implode(',', $row)."\n";
+                        }
+                    
+                        if (!file_exists('var/export/aydus/constantcontact')){
+                            mkdir('var/export/aydus/constantcontact',0755,true);
+                        }
+                    
+                        file_put_contents('var/export/aydus/constantcontact/subscribe.csv', $subscribeRows);
+                        $result = $this->_cc->addCreateContactsActivityFromFile(
+                                ACCESS_TOKEN,
+                                'subscribe.csv',
+                                file_get_contents('var/export/aydus/constantcontact/subscribe.csv'),
+                                $listId
+                        );
+                        $message = (isset($result->contact_count)) ? 'Added contacts: '.$result->contact_count : $result;
+                        Mage::log($message,null,'aydus_constantcontact.log');
+                        unlink('var/export/aydus/constantcontact/subscribe.csv');
+                    
+                    } catch (Exception $e){
+                    
+                        Mage::log($e->getMessage(),null,'aydus_constantcontact.log');
+                    } 
+                                   
+                }
+                 
+            }
+            
+            if (count($unsubscribeAr)>0){
+            
+                if ($this->isReady()){
+                    
+                    try {
+                        $unsubscribeRows =  "Email\n";
+                    
+                        foreach ($unsubscribeAr as $row){
+                            $unsubscribeRows .= $row[0]."\n";
+                        }
+                    
+                        file_put_contents('var/export/aydus/constantcontact/unsubscribe.csv', $unsubscribeRows);
+                        $result = $this->_cc->addRemoveContactsFromListsActivityFromFile(
+                                ACCESS_TOKEN,
+                                'unsubscribe.csv',
+                                file_get_contents('var/export/aydus/constantcontact/unsubscribe.csv'),
+                                $listId
+                        );
+                        $message = (isset($result->contact_count)) ? 'Removed contacts: '.$result->contact_count : $result;
+                        Mage::log($message,null,'aydus_constantcontact.log');
+                        unlink('var/export/aydus/constantcontact/unsubscribe.csv');
+                    
+                    } catch (Exception $e){
+                    
+                        Mage::log($e->getMessage(),null,'aydus_constantcontact.log');
+                    }      
+                                  
+                }
+                
+            }            
+        
+        }
+
+    }
     
     /**
      * Add contact to list
@@ -229,72 +386,79 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
     {
         $result = array();
         
-        try {
-
-            $listId = $data['list'];
-            if (!$listId){
-                $listId = Mage::helper('aydus_constantcontact')->getGeneralListId();
-            }
-            
-            $email = $data['email'];
-            
-            if ($email){
-                
-                $response = $this->_cc->getContactByEmail(ACCESS_TOKEN, $email);
-                
-                //contact is new
-                if (empty($response->results)) {
-                
-                    $contact = new Contact();
-                    $contact->addEmail($email);
-                    $contact->addList($listId);
-                    $contact = $this->_setContactData($contact, $data);
-                
-                    $contact = $this->_cc->addContact(ACCESS_TOKEN, $contact, true);
-                    $result['error'] = false;
-                    $result['data'] = $contact->id;
+        if ($this->isReady(2)){
+        
+            try {
     
-                //update contact
-                } else if (count($response->results) == 1) {
-                
-                    $contact = $response->results[0];
-                    $contact->addList($listId);
-                    $contact = $this->_setContactData($contact, $data);
-                                    
-                    $contact = $this->_cc->updateContact(ACCESS_TOKEN, $contact, true);
-                    $result['error'] = false;
-                    $result['data'] = $contact->id;
-                
-                //some thing wrong
-                } else {
-                
-                    $result['error'] = true;
-                    $result['data'] = 'An error occurred. There were more than one contact for the email.';
+                $listId = @$data['list'];
+                if (!$listId){
+                    $listId = Mage::helper('aydus_constantcontact')->getGeneralListId();
                 }
                 
-                //update table of subscriber contacts
-                $subscriberId = (isset($data['subscriber_id']) && (int)$data['subscriber_id']) ? (int)$data['subscriber_id'] : null;
-                $contactId = $contact->id;
-                if ($subscriberId && $contactId){
-                    $this->_updateSubscriberContact($subscriberId, $contactId);
-                }
+                $email = @$data['email'];
                 
-                $customerId = (isset($data['customer_id']) && (int)$data['customer_id']) ? (int)$data['customer_id'] : null;
-                if ($customerId){
-                    $this->_updateCustomerList(false, $customerId, $listId);
-                }       
-                
-            } else {
-                
-                $result['error'] = true;
-                $result['data'] = 'Missing required email.';
-            }         
+                if ($email){
+                    
+                    $response = $this->_cc->getContactByEmail(ACCESS_TOKEN, $email);
+                    
+                    //contact is new
+                    if (empty($response->results)) {
+                    
+                        $contact = new Contact();
+                        $contact->addEmail($email);
+                        $contact->addList($listId);
+                        $contact = $this->_setContactData($contact, $data);
+                    
+                        $contact = $this->_cc->addContact(ACCESS_TOKEN, $contact, true);
+                        $result['error'] = false;
+                        $result['data'] = $contact->id;
+        
+                    //update contact
+                    } else if (count($response->results) == 1) {
+                    
+                        $contact = $response->results[0];
+                        $contact->addList($listId);
+                        $contact = $this->_setContactData($contact, $data);
                                         
-        } catch (CtctException $ex) {
-
-            Mage::log($ex->getErrors(), null, 'aydus_constantcontact.log');
+                        $contact = $this->_cc->updateContact(ACCESS_TOKEN, $contact, true);
+                        $result['error'] = false;
+                        $result['data'] = $contact->id;
+                    
+                    //some thing wrong
+                    } else {
+                    
+                        $result['error'] = true;
+                        $result['data'] = 'An error occurred. There were more than one contact for the email.';
+                    }
+                    
+                    //update table of subscriber contacts
+                    $subscriberId = (isset($data['subscriber_id']) && (int)$data['subscriber_id']) ? (int)$data['subscriber_id'] : null;
+                    $contactId = $contact->id;
+                    if ($subscriberId && $contactId){
+                        $this->_updateSubscriberContact($subscriberId, $contactId);
+                    }
+                    
+                    $customerId = (isset($data['customer_id']) && (int)$data['customer_id']) ? (int)$data['customer_id'] : null;
+                    if ($customerId){
+                        $this->_updateCustomerList(false, $customerId, $listId);
+                    }       
+                    
+                } else {
+                    
+                    $result['error'] = true;
+                    $result['data'] = 'Missing required email.';
+                }         
+                                            
+            } catch (CtctException $ex) {
+    
+                Mage::log($ex->getErrors(), null, 'aydus_constantcontact.log');
+                $result['error'] = true;
+                $result['data'] = $ex->getMessage();
+            }
+        } else {
+            
             $result['error'] = true;
-            $result['data'] = $ex->getMessage();
+            $result['data'] = 'API is not available.';
         }
         
         return $result;
@@ -302,18 +466,18 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
     
     protected function _setContactData($contact, $data)
     {
-        $contact->prefix_name = $data['prefix'];
-        $contact->first_name = $data['firstname'];
-        $contact->middle_name = $data['middlename'];
-        $contact->last_name = $data['lastname'];
-        $contact->company_name = $data['company'];
-        if ($contact->company){
-            $contact->work_phone = $data['telephone'];
+        $contact->prefix_name = (isset($data['prefix'])) ? $data['prefix'] : '';
+        $contact->first_name = (isset($data['firstname'])) ? $data['firstname'] : '';
+        $contact->middle_name = (isset($data['middlename'])) ? $data['middlename'] : '';
+        $contact->last_name = (isset($data['lastname'])) ? $data['lastname'] : '';
+        $contact->company_name = (isset($data['company'])) ? $data['company'] : '';
+        if (isset($contact->company_name) && $contact->company_name){
+            $contact->work_phone = (isset($data['telephone'])) ? $data['telephone'] : '';
         } else {
-            $contact->home_phone = $data['telephone'];
+            $contact->home_phone = (isset($data['telephone'])) ? $data['telephone'] : '';
         }
         
-        if (is_array($data['street']) || $data['city'] || $data['region'] || $data['postcode']){
+        if (is_array(@$data['street']) || isset($data['city']) || isset($data['region']) || isset($data['postcode'])){
             
             $addresses = $contact->addresses;
             
@@ -327,7 +491,7 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
             $state = '';
             $stateCode = '';
             
-            if ((int)$data['region_id']){
+            if (isset($data['region_id']) && (int)$data['region_id']){
             
                 $regionId = (int)$data['region_id'];
                 $region = Mage::getModel('directory/region')->load($regionId);
@@ -337,7 +501,7 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
                     $stateCode = $region->getCode();
                 }
             
-            } else if ($data['region']) {
+            } else if (isset($data['region']) && $data['region']) {
                 if (strlen($data['region']) == 2){
                     $stateCode = $data['region'];
             
@@ -347,14 +511,20 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
             
             }
             
+            $line1 = (is_array($data['street']) && isset($data['street'][0])) ? $data['street'][0] : '';
+            $line2 = (is_array($data['street']) && isset($data['street'][1])) ? $data['street'][1] : '';
+            $city = (isset($data['city'])) ? $data['city'] : '';
+            $countryCode = (isset($data['country_id'])) ? $data['country_id'] : '';
+            $postalCode = (isset($data['postcode'])) ? $data['postcode'] : '';
+            
             $addressData = array(
-                    'line1' => $data['street'][0],
-                    'line2' => $data['street'][0],
-                    'city' =>  $data['city'],
+                    'line1' => $line1,
+                    'line2' => $line2,
+                    'city' =>  $city,
                     'state' =>  $state,
                     'state_code' => $stateCode,
-                    'country_code' =>  $data['country_id'],
-                    'postal_code' => $data['postcode'],
+                    'country_code' =>  $countryCode,
+                    'postal_code' => $postalCode,
             );
             
             $address->create($addressData);    
@@ -377,28 +547,36 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
     {
         $result = array();
         
-        try {
+        if ($this->isReady(2)){
             
-            $contact = $this->_cc->getContact(ACCESS_TOKEN, $contactId);
-            $contact->addList($listId);
+            try {
             
-            $resultData = $this->_cc->updateContact(ACCESS_TOKEN, $contact, true);
-            $result['error'] = false;
-            $result['data'] = $contact->id;     
-
-            if ($subscriberId){
-                $this->_updateSubscriberContact($subscriberId, $contactId);
-            }    
-            if ($customerId){
-                $this->_updateCustomerList(false, $customerId, $listId);
-            }
-        
-        } catch(CtctException $ex) {
-        
+                $contact = $this->_cc->getContact(ACCESS_TOKEN, $contactId);
+                $contact->addList($listId);
+            
+                $resultData = $this->_cc->updateContact(ACCESS_TOKEN, $contact, true);
+                $result['error'] = false;
+                $result['data'] = $contact->id;
+            
+                if ($subscriberId){
+                    $this->_updateSubscriberContact($subscriberId, $contactId);
+                }
+                if ($customerId){
+                    $this->_updateCustomerList(false, $customerId, $listId);
+                }
+            
+            } catch(CtctException $ex) {
+            
+                $result['error'] = true;
+                $errors = $ex->getErrors();
+                $message = (is_array($errors)) ? $errors[0]['error_message'] : $ex->getMessage();
+                $result['data'] = $message;
+            }  
+                      
+        } else {
+            
             $result['error'] = true;
-            $errors = $ex->getErrors();
-            $message = (is_array($errors)) ? $errors[0]['error_message'] : $ex->getMessage();
-            $result['data'] = $message;
+            $result['data'] = 'API is not available.';
         }
         
         return $result;        
@@ -415,37 +593,45 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
     public function unsubscribe($contactId, $listId, $subscriberId = null, $customerId = null)
     {
         $result = array();
-                        
-        try {
-            
-            $resultData = $this->_cc->deleteContactFromList(ACCESS_TOKEN, $contactId, $listId);
-            
-            if ($resultData){
-                
-                $result['error'] = false;
-                $result['data'] = 'List has been removed from contact.';
-                
-            } else {
-                
-                $result['error'] = true;
-                $result['data'] = $resultData;
-            }
-            
-            if ($subscriberId){
-                $this->_updateSubscriberContact($subscriberId, $contactId);
-            }            
-            if ($customerId){
-                $this->_updateCustomerList(true, $customerId, $listId);
-            }
-            
-        } catch(CtctException $ex) {
-
-            $result['error'] = false;//sdk throws exception if user is not in list
-            $errors = $ex->getErrors();
-            $message = (is_array($errors)) ? $errors[0]['error_message'] : $ex->getMessage(); 
-            $result['data'] = $message;
-        }
         
+        if ($this->isReady()){
+        
+            try {
+                
+                $resultData = $this->_cc->deleteContactFromList(ACCESS_TOKEN, $contactId, $listId);
+                
+                if ($resultData){
+                    
+                    $result['error'] = false;
+                    $result['data'] = 'List has been removed from contact.';
+                    
+                } else {
+                    
+                    $result['error'] = true;
+                    $result['data'] = $resultData;
+                }
+                
+                if ($subscriberId){
+                    $this->_updateSubscriberContact($subscriberId, $contactId);
+                }            
+                if ($customerId){
+                    $this->_updateCustomerList(true, $customerId, $listId);
+                }
+                
+            } catch(CtctException $ex) {
+    
+                $result['error'] = false;//sdk throws exception if user is not in list
+                $errors = $ex->getErrors();
+                $message = (is_array($errors)) ? $errors[0]['error_message'] : $ex->getMessage(); 
+                $result['data'] = $message;
+            }
+            
+        } else {
+        
+            $result['error'] = true;
+            $result['data'] = 'API is not available.';
+        }      
+          
         return $result;
     }
     

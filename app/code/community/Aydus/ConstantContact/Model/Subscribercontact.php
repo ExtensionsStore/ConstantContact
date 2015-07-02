@@ -8,7 +8,7 @@
  * @author      Aydus <davidt@aydus.com>
  */
 
-class Aydus_ConstantContact_Model_Subscribercontact extends Mage_Core_Model_Abstract
+class Aydus_ConstantContact_Model_Subscribercontact extends Aydus_ConstantContact_Model_Abstract
 {
 	/**
 	 * Initialize resource model

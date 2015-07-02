@@ -42,7 +42,7 @@ class Aydus_ConstantContact_Model_System_Config_Source_List extends Varien_Objec
 
     	}else{
     	    
-    		$lists []= array('value' => '', 'label' => Mage::helper('aydus_constantcontact')->__('--- No data (enter key and token first) ---'));
+    		$lists []= array('value' => '', 'label' => Mage::helper('aydus_constantcontact')->__('--- No data (API not available) ---'));
     	}
 
         return $lists;

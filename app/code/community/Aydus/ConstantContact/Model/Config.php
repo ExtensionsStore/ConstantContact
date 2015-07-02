@@ -1,14 +1,14 @@
 <?php
 
 /**
- * ConstantContact Customerlist model
+ * ConstantContact Config model
  *
  * @category    Aydus
  * @package     Aydus_ConstantContact
  * @author      Aydus <davidt@aydus.com>
  */
 
-class Aydus_ConstantContact_Model_Customerlist extends Aydus_ConstantContact_Model_Abstract
+class Aydus_ConstantContact_Model_Config extends Aydus_ConstantContact_Model_Abstract
 {
 	/**
 	 * Initialize resource model
@@ -17,7 +17,7 @@ class Aydus_ConstantContact_Model_Customerlist extends Aydus_ConstantContact_Mod
 	{
         parent::_construct();
         
-		$this->_init('aydus_constantcontact/customerlist');
+		$this->_init('aydus_constantcontact/config');
 	}	
 	
 }

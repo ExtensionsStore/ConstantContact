@@ -11,9 +11,16 @@
 <config>
     <modules>
         <Aydus_ConstantContact>
-            <version>0.9.1</version>
+            <version>0.9.5</version>
         </Aydus_ConstantContact>
     </modules>
+    <phpunit>
+        <suite>
+            <modules>
+                <Aydus_ConstantContact />
+            </modules>
+        </suite>
+    </phpunit>      
     <frontend>
         <routers>
             <aydus_constantcontact>
@@ -39,7 +46,7 @@
                 	<cron_expr>0 3 * * *</cron_expr>
                 </schedule>
                 <run>
-                	<model>aydus_constantcontact/cron::syncContacts</model>
+                	<model>aydus_constantcontact/cron::syncSubscribersContacts</model>
                 </run>
             </aydus_constantcontact_sync>
     	</jobs>
@@ -89,12 +96,15 @@
             <aydus_constantcontact_resource>
                 <class>Aydus_ConstantContact_Model_Resource</class>
                 <entities>
-                    <subscribercontact>
-                        <table>aydus_constantcontact_subscriber_contact</table>
-                    </subscribercontact>
+                    <config>
+                        <table>aydus_constantcontact_config</table>
+                    </config>                    
                     <customerlist>
                         <table>aydus_constantcontact_customer_list</table>
                     </customerlist>                    
+                    <subscribercontact>
+                        <table>aydus_constantcontact_subscriber_contact</table>
+                    </subscribercontact>
                 </entities>
             </aydus_constantcontact_resource>			
 		</models>
@@ -110,7 +120,8 @@
     <default>
     	<aydus_constantcontact>
     		<configuration>
-    			<enabled>1</enabled>
+    			<enabled>0</enabled>
+    			<rate_limit_per_day>10000</rate_limit_per_day>
     		</configuration>
     	</aydus_constantcontact>
     </default>     

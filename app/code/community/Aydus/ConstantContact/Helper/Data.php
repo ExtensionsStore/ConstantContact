@@ -33,6 +33,13 @@ class Aydus_ConstantContact_Helper_Data extends Mage_Core_Helper_Abstract
         return $token;
     }    
     
+    public function getRateLimitPerDay()
+    {
+        $rateLimitPerDay = Mage::getStoreConfig('aydus_constantcontact/configuration/rate_limit_per_day');
+    
+        return $rateLimitPerDay;
+    }
+    
     /**
      * The main list id
      * @return int
@@ -68,6 +75,112 @@ class Aydus_ConstantContact_Helper_Data extends Mage_Core_Helper_Abstract
         
         return $validListIds;
     }
+    
+    /**
+     *
+     * @return Aydus_ConstantContact_Model_Config
+     */
+    public function getCurrentTransactionsConfig()
+    {
+        $currentTransactionsConfig = Mage::getModel('aydus_constantcontact/config');
+        $collection = $currentTransactionsConfig->getCollection();
+        $collection->addFieldToFilter('config_key','current_transactions');
+    
+        if ($collection->getSize()>0){
+    
+            $currentTransactionsConfig = $collection->getFirstItem();
+    
+        } else {
+    
+            try {
+                 
+                $datetime = date('Y-m-d H:i:s');
+    
+                $currentTransactionsConfig->setConfigKey('current_transactions')
+                ->setConfigValue(0)
+                ->setDateCreated($datetime)
+                ->setDateUpdated($datetime);
+    
+                $currentTransactionsConfig->save();
+    
+                 
+            } catch(Exception $e){
+    
+                Mage::log($e->getMessage(),null,'aydus_constantcontact.log');
+            }
+    
+        }
+         
+        return $currentTransactionsConfig;
+    }
+    
+    /**
+     * Get current transactions for limit
+     */
+    public function getCurrentTransactions()
+    {
+        $currentTransactions = 0;
+        $currentTransactionsConfig = $this->getCurrentTransactionsConfig();
+    
+        $today = date('Y-m-d 00:00:01');
+        $today = strtotime($today);
+        $updatedAt = $currentTransactionsConfig->getUpdatedAt();
+        $updatedAt = strtotime($updatedAt);
+    
+        if ($updatedAt < $today){
+    
+            try {
+                 
+                $datetime = date('Y-m-d H:i:s');
+    
+                $currentTransactionsConfig->setCurrentTransactions(0)
+                ->setUpdatedAt($datetime);
+    
+                $currentTransactionsConfig->save();
+    
+                 
+            } catch(Exception $e){
+    
+                Mage::log($e->getMessage(),null,'aydus_constantcontact.log');
+            }
+    
+        }
+    
+        $currentTransactions = $currentTransactionsConfig->getConfigValue();
+         
+        return $currentTransactions;
+    }
+    
+    /**
+     * Increment number of transactions
+     *
+     * @param int $calls
+     * @return boolean
+     */
+    public function incrementTransactions($calls = 1)
+    {
+        if ($calls > 0){
+             
+            try {
+                 
+                $datetime = date('Y-m-d H:i:s');
+                $currentTransactionsConfig = $this->getCurrentTransactionsConfig();
+                $currentTransactions = $this->getCurrentTransactions() + $calls;
+                 
+                $currentTransactionsConfig->setConfigValue($currentTransactions)
+                ->setUpdatedAt($datetime);
+    
+                $currentTransactionsConfig->save();
+    
+            } catch(Exception $e){
+                 
+                Mage::log($e->getMessage(),null,'aydus_constantcontact.log');
+                return false;
+            }
+        }
+         
+        return true;
+    }    
         	
     /**
      * http://stackoverflow.com/questions/1462503/sort-array-by-object-property-in-php
