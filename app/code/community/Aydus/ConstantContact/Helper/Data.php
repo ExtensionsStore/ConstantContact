@@ -5,7 +5,7 @@
  *
  * @category    Aydus
  * @package     Aydus_ConstantContact
- * @author     	Aydus <davidt@aydus.com>
+ * @author      Aydus <davidt@aydus.com>
  */
 
 class Aydus_ConstantContact_Helper_Data extends Mage_Core_Helper_Abstract
