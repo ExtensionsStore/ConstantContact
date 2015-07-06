@@ -8,7 +8,14 @@
  * @author      Aydus <davidt@aydus.com>
  */
 
-require 'vendor/autoload.php';
+if (file_exists('vendor'.DS.'autoload.php') && file_exists('vendor'.DS.'constantcontact')){
+    
+    require 'vendor'.DS.'autoload.php';
+    
+} else {
+    
+    require Mage::getBaseDir('lib').DS.'ConstantContact'.DS. 'vendor'.DS.'autoload.php';
+}
 
 use Ctct\ConstantContact;
 use Ctct\Components\Contacts\Address;
@@ -266,6 +273,10 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
      */
     public function syncSubscribersContacts()
     {
+        if (!Mage::getStoreConfig('aydus_constantcontact/configuration/sync_subscribers')){
+            return 'Sync disabled in system configuration.';
+        }
+        
         $subscribers = Mage::getModel('newsletter/subscriber')->getCollection();
         $subscribeAr = array();
         $unsubscribeAr = array();
@@ -374,6 +385,10 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
             }            
         
         }
+        
+        $numSynced = count($subscribeAr) + count($unsubscribeAr);
+        
+        return 'Sync complete. Number synced: '. $numSynced;
 
     }
     

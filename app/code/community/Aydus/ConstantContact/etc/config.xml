@@ -11,7 +11,7 @@
 <config>
     <modules>
         <Aydus_ConstantContact>
-            <version>0.9.5</version>
+            <version>0.9.6</version>
         </Aydus_ConstantContact>
     </modules>
     <phpunit>
@@ -122,6 +122,7 @@
     		<configuration>
     			<enabled>0</enabled>
     			<rate_limit_per_day>10000</rate_limit_per_day>
+    			<sync_subscribers>0</sync_subscribers>
     		</configuration>
     	</aydus_constantcontact>
     </default>     

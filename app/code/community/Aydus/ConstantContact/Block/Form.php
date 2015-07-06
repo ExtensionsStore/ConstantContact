@@ -5,7 +5,7 @@
  *
  * @category    Aydus
  * @package     Aydus_ConstantContact
- * @author     	Aydus Consulting <davidt@aydus.com>
+ * @author     	Aydus <davidt@aydus.com>
  */
 
 class Aydus_ConstantContact_Block_Form extends Mage_Core_Block_Template

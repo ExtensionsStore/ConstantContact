@@ -2,5 +2,4 @@ app/code/community/Aydus/ConstantContact/                           app/code/com
 app/design/frontend/base/default/layout/aydus/constantcontact.xml   app/design/frontend/base/default/layout/aydus/constantcontact.xml
 app/design/frontend/base/default/template/aydus/constantcontact/    app/design/frontend/base/default/template/aydus/constantcontact/
 app/etc/modules/Aydus_ConstantContact.xml                           app/etc/modules/Aydus_ConstantContact.xml
-vendor/constantcontact                                              vendor/constantcontact
-vendor/autoload.php                                                 vendor/autoload.php
+lib/ConstantContact/                                                lib/ConstantContact/

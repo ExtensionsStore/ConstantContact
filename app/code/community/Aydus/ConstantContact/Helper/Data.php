@@ -5,7 +5,7 @@
  *
  * @category    Aydus
  * @package     Aydus_ConstantContact
- * @author     	Aydus Consulting <davidt@aydus.com>
+ * @author     	Aydus <davidt@aydus.com>
  */
 
 class Aydus_ConstantContact_Helper_Data extends Mage_Core_Helper_Abstract
@@ -133,7 +133,7 @@ class Aydus_ConstantContact_Helper_Data extends Mage_Core_Helper_Abstract
                  
                 $datetime = date('Y-m-d H:i:s');
     
-                $currentTransactionsConfig->setCurrentTransactions(0)
+                $currentTransactionsConfig->setConfigValue(0)
                 ->setUpdatedAt($datetime);
     
                 $currentTransactionsConfig->save();

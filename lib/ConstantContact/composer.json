@@ -1,0 +1,5 @@
+{
+    "require": {
+        "constantcontact/constantcontact": "1.3.*"
+    }
+}

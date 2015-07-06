@@ -17,7 +17,7 @@ class Aydus_ConstantContact_Model_Cron
      */
     public function syncSubscribersContacts($schedule)
     {
-        Mage::getSingleton('aydus_constantcontact/constantcontact')->syncSubscribersContacts();
+        return Mage::getSingleton('aydus_constantcontact/constantcontact')->syncSubscribersContacts();
     }
     
 }

@@ -5,7 +5,7 @@
  *
  * @category    Aydus
  * @package     Aydus_ConstantContact
- * @author     	Aydus Consulting <davidt@aydus.com>
+ * @author     	Aydus <davidt@aydus.com>
  */
 
 $this->startSetup();
