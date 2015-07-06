@@ -27,5 +27,12 @@
         </reference>    	
     
     </aydus_constantcontact_form_subscribe>
+    
+    <newsletter_manage_index>
+        <reference name="customer_newsletter">
+            <block type="customer/newsletter" name="customer.form.newsletter.extra" template="aydus/constantcontact/customer/form/newsletter/extra.phtml">
+            </block>
+        </reference>
+    </newsletter_manage_index>    
 
 </layout>

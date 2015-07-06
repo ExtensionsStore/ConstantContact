@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * Customer newsletter extra lists
+ *
+ * @category    Aydus
+ * @package     Aydus_ConstantContact
+ * @author      Aydus <davidt@aydus.com>
+ */
+
+$lists = Mage::getSingleton('aydus_constantcontact/constantcontact')->getLists(false);
+
+if (count($lists)>0):
+    foreach ($lists as $list):
+?>
+<li class="control">
+    <input type="checkbox" name="subscribed_lists[<?php echo $list->id ?>]" value="1" title="<?php echo $this->__($list->name) ?>"
+    <?php if(@$list->isSubscribed): ?> checked="checked"<?php endif; ?> class="checkbox" />
+    <label for="subscribed_lists[<?php echo $list->id ?>]"><?php echo $this->__($list->name) ?></label>
+</li>
+<?php 
+    endforeach;
+endif;
+?>

@@ -91,7 +91,7 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
         
         return $ready;
     }
-    
+        
     /**
      * Get all lists from API
      * @return array
@@ -134,7 +134,7 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
     /**
      * Get selected lists from configuration
      */
-    public function getLists()
+    public function getLists($general = true)
     {
         if( !$this->_lists){
         
@@ -142,11 +142,21 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
             
             if (is_array($lists) && count($lists) > 0){
                 
-                $validListIds = Mage::helper('aydus_constantcontact')->getValidListIds();
+                $helper = Mage::helper('aydus_constantcontact');
+                $validListIds = $helper->getValidListIds();
+                
+                if (!$general){
+                    $generalListId = $helper->getGeneralListId();
+                    $key = array_search($generalListId, $validListIds);
+                    unset($validListIds[$key]);
+                }
                 
                 foreach ($lists as $list){
                 
                     if (in_array($list->id, $validListIds)){
+                        
+                        $list->isSubscribed = $this->getIsSubscribed($list->id);
+                        
                         $this->_lists[] = $list;
                 
                     }
@@ -158,6 +168,34 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
         }   
         
         return $this->_lists;
+    }
+    
+    /**
+     * Check if current customer is subscribed to list
+     * 
+     * @param int $listId
+     * @return boolean
+     */
+    public function getIsSubscribed($listId)
+    {
+        $customer = Mage::getSingleton('customer/session')->getCustomer();
+        $customerId = $customer->getId();
+        
+        if ($customerId){
+            
+            $customerList = Mage::getModel('aydus_constantcontact/customerlist');
+            $collection = $customerList->getCollection();
+            $collection->addFieldToFilter('customer_id',$customerId);
+            $collection->addFieldToFilter('list_id',$listId);
+                        
+            if ($collection->getSize() > 0){
+                
+                return true;
+            }
+            
+        }
+        
+        return false;
     }
     
     /**
@@ -199,6 +237,7 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
                 $subscriberId = $subscriber->getId();
                 $customerId = $subscriber->getCustomerId();
                 $subscriberEmail = $subscriber->getSubscriberEmail();
+                $contactId = $this->getContactId($subscriber);
                 
                 if ($customerId){
                 
@@ -225,39 +264,42 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
                     $result = $this->addUpdateContact($data);
                 
                 } else if ($subscriber->getSubscriberStatus() == 3){
-                
-                    if ($customerId && $customer->getId()){
-                
-                        $contactId = $customer->getContactId();
-                
-                        if (!$contactId){
-                
-                            $subscriberContact = Mage::getSingleton('aydus_constantcontact/subscribercontact');
-                            $subscriberContact->load($subscriberId, 'subscriber_id');
-                            $contactId = $subscriberContact->getContactId();
-                        }
-                
-                    }
-                
-                    //get from CC
-                    if (!$contactId){
-                        $contact = $this->getContactByEmail($subscriberEmail);
-                        if ($contact && $contact->id){
-                            $contactId = $contact->id;
-                        }
-                    }
-                
+                 
                     if ($contactId){
                 
                         $result = $this->unsubscribe($contactId, $listId, $subscriberId, $customerId);
                     }
+                }
                 
+                //additional lists
+                $lists = $this->getLists(false);
+                
+                if ($contactId && is_array($lists) && count($lists)>0){
+                    
+                    $subscribeLists = (array)Mage::app()->getRequest()->getParam('subscribed_lists');
+                    $helper = Mage::helper('aydus_constantcontact');
+                    
+                    foreach ($lists as $list){
+                        
+                        $listId = $list->id;
+                        
+                        if (in_array($listId, array_keys($subscribeLists))){
+                        
+                            $this->subscribe($contactId, $listId, $subscriberId, $customerId);
+                        
+                        } else {
+                        
+                            $this->unsubscribe($contactId, $listId, $subscriberId, $customerId);
+                        
+                        }                            
+                        
+                    }
+              
                 }
                                 
             }catch (Exception $e){
                 Mage::log($e->getMessage(),null,'aydus_constantcontact.log');
             }
-    
     
         } else {
     
@@ -266,7 +308,49 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
         }
     
         return $result;
-    }    
+    } 
+
+    /**
+     * Get contact id 
+     * 
+     * @param Mage_Newsletter_Model_Subscriber $subscriber
+     * @return int
+     */
+    public function getContactId($subscriber)
+    {
+        $subscriberId = $subscriber->getId();
+        $customerId = $subscriber->getCustomerId();
+        $subscriberEmail = $subscriber->getSubscriberEmail();
+        
+        if ($customerId){
+        
+            $customer = Mage::getModel('customer/customer');
+            $customer->load($customerId);
+        }        
+        
+        if ($customerId && $customer->getId()){
+        
+            $contactId = $customer->getContactId();
+        
+            if (!$contactId){
+        
+                $subscriberContact = Mage::getSingleton('aydus_constantcontact/subscribercontact');
+                $subscriberContact->load($subscriberId, 'subscriber_id');
+                $contactId = $subscriberContact->getContactId();
+            }
+        
+        }
+        
+        //get from CC
+        if (!$contactId){
+            $contact = $this->getContactByEmail($subscriberEmail);
+            if ($contact && isset($contact->id)){
+                $contactId = $contact->id;
+            }
+        }        
+        
+        return $contactId;
+    }
     
     /**
      *  Synchronized Newsletter Subscribers with General List
