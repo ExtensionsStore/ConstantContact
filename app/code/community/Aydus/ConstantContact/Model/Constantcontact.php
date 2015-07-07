@@ -354,14 +354,14 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
     
     /**
      *  Synchronized Newsletter Subscribers with General List
+     *  @param int $limit
      */
-    public function syncSubscribersContacts()
-    {
-        if (!Mage::getStoreConfig('aydus_constantcontact/configuration/sync_subscribers')){
-            return 'Sync disabled in system configuration.';
-        }
-        
+    public function syncSubscribersContacts($limit = 0)
+    {        
         $subscribers = Mage::getModel('newsletter/subscriber')->getCollection();
+        if ($limit){
+            $subscribers->setPageSize($limit);
+        }
         $subscribeAr = array();
         $unsubscribeAr = array();
         

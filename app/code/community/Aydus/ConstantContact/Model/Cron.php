@@ -17,6 +17,10 @@ class Aydus_ConstantContact_Model_Cron
      */
     public function syncSubscribersContacts($schedule)
     {
+        if (!Mage::getStoreConfig('aydus_constantcontact/configuration/sync_subscribers')){
+            return 'Sync disabled in system configuration.';
+        }
+        
         return Mage::getSingleton('aydus_constantcontact/constantcontact')->syncSubscribersContacts();
     }
     

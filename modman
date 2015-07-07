@@ -3,3 +3,4 @@ app/design/frontend/base/default/layout/aydus/constantcontact.xml   app/design/f
 app/design/frontend/base/default/template/aydus/constantcontact/    app/design/frontend/base/default/template/aydus/constantcontact/
 app/etc/modules/Aydus_ConstantContact.xml                           app/etc/modules/Aydus_ConstantContact.xml
 lib/ConstantContact/                                                lib/ConstantContact/
+shell/aydus_constantcontact.php                                     shell/aydus_constantcontact.php

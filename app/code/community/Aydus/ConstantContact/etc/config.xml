@@ -11,7 +11,7 @@
 <config>
     <modules>
         <Aydus_ConstantContact>
-            <version>0.9.6</version>
+            <version>0.9.7</version>
         </Aydus_ConstantContact>
     </modules>
     <phpunit>
