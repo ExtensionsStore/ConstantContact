@@ -21,7 +21,7 @@ class Aydus_ConstantContact_Model_Observer
     {
         $subscriber = $observer->getSubscriber();
         
-        $result = Mage::getModel('aydus_constantcontact/constantcontact')->updateSubscriber($subscriber);
+        $result = Mage::getSingleton('aydus_constantcontact/constantcontact')->updateSubscriber($subscriber);
         
         return $observer;
     }
@@ -37,7 +37,7 @@ class Aydus_ConstantContact_Model_Observer
     {
         $subscriber = $observer->getSubscriber();
             
-        $result = Mage::getModel('aydus_constantcontact/constantcontact')->updateSubscriber($subscriber);
+        $result = Mage::getSingleton('aydus_constantcontact/constantcontact')->updateSubscriber($subscriber);
             
         return $observer;        
     }
