@@ -318,6 +318,7 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
      */
     public function getContactId($subscriber)
     {
+        $contactId = false;
         $subscriberId = $subscriber->getId();
         $customerId = $subscriber->getCustomerId();
         $subscriberEmail = $subscriber->getSubscriberEmail();
