@@ -1,0 +1,14 @@
+config:
+    default/aydus_constantcontact/configuration/enabled: 1
+    default/aydus_constantcontact/configuration/application: Magento Constant Contact
+    default/aydus_constantcontact/configuration/key: 0:2:fee47e1f52269722:GycJZXWhDDrnIfnDDhg/xe5ckYE6wYrCcL1ZEhDxO7M=
+    default/aydus_constantcontact/configuration/secret: 0:2:7d920da65060b95e:qQ+YiYx10Y7giIhdpZKDKVoqgadRF0+EHbjK8mcNqEc=
+    default/aydus_constantcontact/configuration/token: 0:2:0ccb04d4aab76c60:PBrX1/HSgsT5u+fCGUqImT2upxzhn8IpxwlHpfx92RJb0mgOrIh7Qo4ek2jaq9xu
+    default/aydus_constantcontact/configuration/list: 1431030953
+#tables:
+#  newsletter/subscriber:
+#    - subscriber_id: 1
+#      store_id: 1
+#      subscriber_email: dvd_tay@yahoo.com
+#      subscriber_status: 1
+    
