@@ -1,12 +1,14 @@
 Constant Contact
 ===============
-Add Magento users to Constant Contact contacts and lists.
+Add Magento users to Constant Contact contacts and lists and send 
+Magento newsletters as CC campaigns.
 
 Description
 -----------
-Add Magento users to Constant Contact contacts and lists. Users
-can subscribe to lists by subscribing to the Magento newsletter. 
-Additionally, by submitting a form on this page:
+Add Magento users to Constant Contact contacts and lists and send 
+Magento newsletters as email campaigns. Users can subscribe to 
+lists by subscribing to the Magento newsletter. Additionally, by 
+submitting a form on this page:
 
 /constantcontact/form/subscribe
 
@@ -29,3 +31,4 @@ In the admin under System -> Configuration -> General -> Constant Contact,
 configure the extension:
 
 <img src="md/configuration.png" />
+

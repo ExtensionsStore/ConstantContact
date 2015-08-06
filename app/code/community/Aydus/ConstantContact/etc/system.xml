@@ -103,11 +103,21 @@
                             <show_in_store>0</show_in_store>
                             <comment><![CDATA[Subscribe Magento newsletter subscriptions to this list. Note, enter key and token first and save configuration to see list.]]></comment>
                         </list>   
+                        <send_newsletters translate="label">
+                            <label>Send Newsletters to General Contact List</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>100</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <comment><![CDATA[If Yes, Constant Contact will send newsletters to the General Contact List above instead of Magento. If you get any errors, try adding an organization address to your Constant Contact account.]]></comment>
+                        </send_newsletters>                                              
                         <sync_subscribers translate="label">
                             <label>Sync Newsletter Subscribers</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
-                            <sort_order>100</sort_order>
+                            <sort_order>110</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>0</show_in_website>
                             <show_in_store>0</show_in_store>
@@ -117,7 +127,7 @@
                             <label>Additional Lists</label>
                             <frontend_type>multiselect</frontend_type>
                             <source_model>aydus_constantcontact/system_config_source_list</source_model>
-                            <sort_order>110</sort_order>
+                            <sort_order>120</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>0</show_in_website>
                             <show_in_store>0</show_in_store>

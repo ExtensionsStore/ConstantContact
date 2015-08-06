@@ -39,6 +39,13 @@ class Aydus_ConstantContact_Helper_Data extends Mage_Core_Helper_Abstract
     
         return $rateLimitPerDay;
     }
+
+    public function getSendNewsletters()
+    {
+        $sendNewsletters = (int)Mage::getStoreConfig('aydus_constantcontact/configuration/send_newsletters');
+    
+        return $sendNewsletters;
+    }
     
     /**
      * The main list id

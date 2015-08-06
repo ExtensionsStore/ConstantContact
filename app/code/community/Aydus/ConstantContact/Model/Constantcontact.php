@@ -8,20 +8,15 @@
  * @author      Aydus <davidt@aydus.com>
  */
 
-if (file_exists('vendor'.DS.'autoload.php') && file_exists('vendor'.DS.'constantcontact')){
-    
-    require 'vendor'.DS.'autoload.php';
-    
-} else {
-    
-    require Mage::getBaseDir('lib').DS.'ConstantContact'.DS. 'vendor'.DS.'autoload.php';
-}
+require Mage::getBaseDir('lib').DS.'ConstantContact'.DS. 'vendor'.DS.'autoload.php';
 
 use Ctct\ConstantContact;
 use Ctct\Components\Contacts\Address;
 use Ctct\Components\Contacts\Contact;
 use Ctct\Components\Contacts\ContactList;
 use Ctct\Components\Contacts\EmailAddress;
+use Ctct\Components\EmailMarketing\Campaign;
+use Ctct\Components\EmailMarketing\Schedule;
 use Ctct\Exceptions\CtctException;
 
 class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstract
@@ -29,6 +24,7 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
     protected $_cc;
     protected $_allLists;
     protected $_lists;
+    protected $_campaigns;
 
     protected function _construct()
     {
@@ -169,7 +165,7 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
         
         return $this->_lists;
     }
-    
+        
     /**
      * Check if current customer is subscribed to list
      * 
@@ -351,6 +347,104 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
         }        
         
         return $contactId;
+    }
+    
+    /**
+     * Send Magento newsletter to the Constant Contact general list
+     */
+    public function sendNewsletters()
+    {
+        $helper = Mage::helper('aydus_constantcontact');
+        $sendNewsletters = $helper->getSendNewsletters();
+        
+        if ($sendNewsletters){
+            
+            try {
+                
+                $generalListId = $helper->getGeneralListId();
+                
+                $collection = Mage::getModel('newsletter/queue')->getCollection()
+                  ->addOnlyForSendingFilter()
+                  ->load();
+                                
+                foreach ($collection as $queue){
+                    
+                    if ($this->isReady()){
+                        
+                        $template = $queue->getTemplate();
+                        $templateId = $queue->getTemplateId();
+                        $newsletterName = $template->getTemplateCode();
+                        $data = $queue->getData();
+                        
+                        $found = false;
+                        $campaigns = $this->_cc->getEmailCampaigns(ACCESS_TOKEN);
+                        
+                        if (is_array($campaigns->results) && count($campaigns->results)>0){
+                            foreach ($campaigns->results as $campaign){
+                                if ($campaign && $campaign->name == $newsletterName){
+                                    $found = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (!$found && $this->isReady()){
+                        
+                            $campaign = new Campaign();
+                            $campaign->name = $newsletterName;
+                            $campaign->subject = @$data['newsletter_subject'];
+                            $campaign->from_name = @$data['newsletter_sender_name'];
+                            $campaign->from_email = @$data['newsletter_sender_email'];
+                            $campaign->greeting_string = @$data['newsletter_subject'];
+                            $campaign->reply_to_email = @$data['newsletter_sender_email'];
+                            $campaign->text_content = strip_tags(@$data['newsletter_text']);
+                            $campaign->email_content = '<html><body>'.@$data['newsletter_text'].'</body></html>';
+                            $campaign->email_content_format = 'HTML';
+                        
+                            $campaign->addList($generalListId);
+                        
+                            $campaign = $this->_cc->addEmailCampaign(ACCESS_TOKEN, $campaign);
+                        }
+                        
+                        $campaignId = @$campaign->id;
+                        
+                        if ($campaignId && $this->isReady()){
+                        
+                            $schedule = new Schedule();
+                        
+                            $now = time();
+                        
+                            $queueStartAt = strtotime(@$data['queue_start_at']);
+                        
+                            $oneHourFromNow = strtotime("+1 hour");
+                        
+                            $scheduledDateTime = (!$queueStartAt || $queueStartAt < $now) ? $oneHourFromNow : $queueStartAt;
+                        
+                            $schedule->scheduled_date = date('Y-m-d\TH:i:s\.000\Z', $scheduledDateTime);
+                        
+                            $schedule = $this->_cc->addEmailCampaignSchedule(ACCESS_TOKEN, $campaign, $schedule);
+                        
+                            if (@$schedule->id){
+                        
+                                $queue->setQueueStatus(Mage_Newsletter_Model_Queue::STATUS_SENT);
+                                $queue->setQueueFinishAt(date('Y-m-d H:i:s'));
+                                $queue->save();
+                        
+                            }
+                        
+                        } 
+                                               
+                    }
+                
+                }
+                            
+            } catch (CtctException $ex) {
+                
+                Mage::log($ex->getErrors(), null, 'aydus_constantcontact.log');
+            }               
+            
+        }
+        
     }
     
     /**

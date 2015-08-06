@@ -11,7 +11,7 @@
 <config>
     <modules>
         <Aydus_ConstantContact>
-            <version>0.9.8</version>
+            <version>1.0.0</version>
         </Aydus_ConstantContact>
     </modules>
     <phpunit>
@@ -106,7 +106,12 @@
                         <table>aydus_constantcontact_subscriber_contact</table>
                     </subscribercontact>
                 </entities>
-            </aydus_constantcontact_resource>			
+            </aydus_constantcontact_resource>		
+            <newsletter>
+            	<rewrite>
+            		<observer>Aydus_ConstantContact_Model_Newsletter_Observer</observer>
+            	</rewrite>
+            </newsletter>	
 		</models>
         <resources>
             <aydus_constantcontact_setup>
