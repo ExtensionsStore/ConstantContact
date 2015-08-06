@@ -28,8 +28,8 @@ use Ctct\Components\EmailMarketing\Schedule;
 use Ctct\Exceptions\CtctException;
 
 // Enter your Constant Contact APIKEY and ACCESS_TOKEN
-define("APIKEY", "dccdf3pw8q298k93qyttt9x4");
-define("ACCESS_TOKEN", "6bba1182-a276-4097-8c7e-b972ab619f2c");
+define("APIKEY", "ENTER YOUR API KEY");
+define("ACCESS_TOKEN", "ENTER YOUR ACCESS TOKEN");
 
 $cc = new ConstantContact(APIKEY);
 $date = date('Y-m-d\TH:i:s\.000\Z', strtotime("+1 month"));
