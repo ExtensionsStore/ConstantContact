@@ -275,20 +275,24 @@ class Aydus_ConstantContact_Model_Constantcontact extends Mage_Core_Model_Abstra
                     $subscribeLists = (array)Mage::app()->getRequest()->getParam('subscribed_lists');
                     $helper = Mage::helper('aydus_constantcontact');
                     
-                    foreach ($lists as $list){
+                    if (is_array($subscribeLists) && count($subscribeLists)>0){
                         
-                        $listId = $list->id;
+                        foreach ($lists as $list){
                         
-                        if (in_array($listId, array_keys($subscribeLists))){
+                            $listId = $list->id;
                         
-                            $this->subscribe($contactId, $listId, $subscriberId, $customerId);
+                            if (in_array($listId, array_keys($subscribeLists))){
                         
-                        } else {
+                                $this->subscribe($contactId, $listId, $subscriberId, $customerId);
                         
-                            $this->unsubscribe($contactId, $listId, $subscriberId, $customerId);
+                            } else {
                         
-                        }                            
+                                $this->unsubscribe($contactId, $listId, $subscriberId, $customerId);
                         
+                            }
+                        
+                        }      
+                                      
                     }
               
                 }
