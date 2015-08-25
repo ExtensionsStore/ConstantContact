@@ -11,6 +11,9 @@
 $lists = Mage::getSingleton('aydus_constantcontact/constantcontact')->getLists(false);
 
 if (count($lists)>0):
+?>
+<input type="hidden" name="extra_lists" value="1" />
+<?php
     foreach ($lists as $list):
 ?>
 <li class="control">
