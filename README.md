@@ -22,9 +22,9 @@ Magento install. Let the setup script run. After the setup is completed, several
 tables will be created:
 
 <pre>
-aydus_constantcontact_config
-aydus_constantcontact_customer_list
-aydus_constantcontact_subscriber_contact
+extensions_store_constantcontact_config
+extensions_store_constantcontact_customer_list
+extensions_store_constantcontact_subscriber_contact
 </pre>
 
 In the admin under System -> Configuration -> General -> Constant Contact,

@@ -1,6 +1,6 @@
-app/code/community/Aydus/ConstantContact/                           app/code/community/Aydus/ConstantContact/
-app/design/frontend/base/default/layout/aydus/constantcontact.xml   app/design/frontend/base/default/layout/aydus/constantcontact.xml
-app/design/frontend/base/default/template/aydus/constantcontact/    app/design/frontend/base/default/template/aydus/constantcontact/
-app/etc/modules/Aydus_ConstantContact.xml                           app/etc/modules/Aydus_ConstantContact.xml
-lib/ConstantContact/                                                lib/ConstantContact/
-shell/aydus_constantcontact.php                                     shell/aydus_constantcontact.php
+app/code/community/ExtensionsStore/ConstantContact/                           app/code/community/ExtensionsStore/ConstantContact/
+app/design/frontend/base/default/layout/extensions_store/constantcontact.xml   app/design/frontend/base/default/layout/extensions_store/constantcontact.xml
+app/design/frontend/base/default/template/extensions_store/constantcontact/    app/design/frontend/base/default/template/extensions_store/constantcontact/
+app/etc/modules/ExtensionsStore_ConstantContact.xml                           app/etc/modules/ExtensionsStore_ConstantContact.xml
+lib/ConstantContact/                                                			lib/ConstantContact/
+shell/extensions_store_constantcontact.php                                     shell/extensions_store_constantcontact.php

@@ -1,0 +1,7 @@
+config:
+    default/extensions_store_constantcontact/configuration/enabled: 1
+    default/extensions_store_constantcontact/configuration/application: Magento Constant Contact
+    default/extensions_store_constantcontact/configuration/key: 0:2:fee47e1f52269722:GycJZXWhDDrnIfnDDhg/xe5ckYE6wYrCcL1ZEhDxO7M=
+    default/extensions_store_constantcontact/configuration/secret: 0:2:7d920da65060b95e:qQ+YiYx10Y7giIhdpZKDKVoqgadRF0+EHbjK8mcNqEc=
+    default/extensions_store_constantcontact/configuration/token: 0:2:0ccb04d4aab76c60:PBrX1/HSgsT5u+fCGUqImT2upxzhn8IpxwlHpfx92RJb0mgOrIh7Qo4ek2jaq9xu
+    default/extensions_store_constantcontact/configuration/list: 1431030953

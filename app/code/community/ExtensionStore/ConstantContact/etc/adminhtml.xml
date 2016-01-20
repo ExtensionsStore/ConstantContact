@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * System configuration acl
+ *
+ * @category   ExtensionsStore
+ * @package    ExtensionsStore_ConstantContact
+ * @author     Extensions Store <admin@extensions-store.com>
+ */
+-->
+<config>
+    <acl>
+        <resources>
+            <admin>
+                <children>
+                    <system>
+                        <children>
+                            <config>
+                                <children>
+                                    <extensions_store_constantcontact translate="title" module="extensions_store_constantcontact">
+                                        <title>Constant Contact Settings</title>
+                                    </extensions_store_constantcontact>
+                                </children>
+                            </config>
+                        </children>
+                    </system>
+                </children>
+            </admin>
+        </resources>
+    </acl>
+</config>

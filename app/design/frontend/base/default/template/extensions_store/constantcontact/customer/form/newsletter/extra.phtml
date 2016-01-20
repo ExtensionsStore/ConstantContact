@@ -1,0 +1,27 @@
+<?php
+
+/**
+ * Customer newsletter extra lists
+ *
+ * @category    ExtensionsStore
+ * @package     ExtensionsStore_ConstantContact
+ * @author      Extensions Store <admin@extensions-store.com>
+ */
+
+$lists = Mage::getSingleton('extensions_store_constantcontact/constantcontact')->getLists(false);
+
+if (count($lists)>0):
+?>
+<input type="hidden" name="extra_lists" value="1" />
+<?php
+    foreach ($lists as $list):
+?>
+<li class="control">
+    <input type="checkbox" name="subscribed_lists[<?php echo $list->id ?>]" value="1" title="<?php echo $this->__($list->name) ?>"
+    <?php if(@$list->isSubscribed): ?> checked="checked"<?php endif; ?> class="checkbox" />
+    <label for="subscribed_lists[<?php echo $list->id ?>]"><?php echo $this->__($list->name) ?></label>
+</li>
+<?php 
+    endforeach;
+endif;
+?>

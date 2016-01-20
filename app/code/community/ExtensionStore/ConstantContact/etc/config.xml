@@ -1,0 +1,134 @@
+<?xml version="1.0"?>
+<!-- 
+/**
+ * ConstantContact config
+ * 
+ * @category    ExtensionsStore
+ * @package     ExtensionsStore_ConstantContact
+ * @author      Extensions Store <admin@extensions-store.com>
+ */
+-->
+<config>
+    <modules>
+        <ExtensionsStore_ConstantContact>
+            <version>1.0.2</version>
+        </ExtensionsStore_ConstantContact>
+    </modules>
+    <phpunit>
+        <suite>
+            <modules>
+                <ExtensionsStore_ConstantContact />
+            </modules>
+        </suite>
+    </phpunit>      
+    <frontend>
+        <routers>
+            <extensions_store_constantcontact>
+                <use>standard</use>
+                <args>
+                    <module>ExtensionsStore_ConstantContact</module>
+                    <frontName>constantcontact</frontName>
+                </args>
+            </extensions_store_constantcontact>
+        </routers>       
+        <layout>
+            <updates>
+                <extensions_store_constantcontact module="ExtensionsStore_ConstantContact">
+                    <file>extensions_store/constantcontact.xml</file>
+                </extensions_store_constantcontact>
+            </updates>
+        </layout>     
+    </frontend>    
+    <crontab>
+    	<jobs>
+            <extensions_store_constantcontact_sync>
+                <schedule>
+                	<cron_expr>0 3 * * *</cron_expr>
+                </schedule>
+                <run>
+                	<model>extensions_store_constantcontact/cron::syncSubscribersContacts</model>
+                </run>
+            </extensions_store_constantcontact_sync>
+    	</jobs>
+    </crontab>
+    <global>
+    	<events>
+            <newsletter_subscriber_save_after>
+                <observers>
+                    <constantcontact_observer>
+                        <class>extensions_store_constantcontact/observer</class>
+                        <method>newsletterSubscriberSaveAfter</method>
+                    </constantcontact_observer>
+                </observers>
+            </newsletter_subscriber_save_after>
+            <newsletter_subscriber_delete_after>
+                <observers>
+                    <constantcontact_observer>
+                        <class>extensions_store_constantcontact/observer</class>
+                        <method>newsletterUnsubscribe</method>
+                    </constantcontact_observer>
+                </observers>
+            </newsletter_subscriber_delete_after>
+            <customer_save_after>
+                <observers>
+                    <constantcontact_observer>
+                        <class>extensions_store_constantcontact/observer</class>
+                        <method>updateCustomer</method>
+                    </constantcontact_observer>
+                </observers>
+            </customer_save_after>
+    	</events>
+		<blocks>
+			<extensions_store_constantcontact>
+				<class>ExtensionsStore_ConstantContact_Block</class>
+			</extensions_store_constantcontact>
+		</blocks>
+		<helpers>
+			<extensions_store_constantcontact>
+				<class>ExtensionsStore_ConstantContact_Helper</class>
+			</extensions_store_constantcontact>
+		</helpers>
+		<models>
+			<extensions_store_constantcontact>
+				<class>ExtensionsStore_ConstantContact_Model</class>
+                <resourceModel>extensions_store_constantcontact_resource</resourceModel>
+			</extensions_store_constantcontact>
+            <extensions_store_constantcontact_resource>
+                <class>ExtensionsStore_ConstantContact_Model_Resource</class>
+                <entities>
+                    <config>
+                        <table>extensions_store_constantcontact_config</table>
+                    </config>                    
+                    <customerlist>
+                        <table>extensions_store_constantcontact_customer_list</table>
+                    </customerlist>                    
+                    <subscribercontact>
+                        <table>extensions_store_constantcontact_subscriber_contact</table>
+                    </subscribercontact>
+                </entities>
+            </extensions_store_constantcontact_resource>		
+            <newsletter>
+            	<rewrite>
+            		<observer>ExtensionsStore_ConstantContact_Model_Newsletter_Observer</observer>
+            	</rewrite>
+            </newsletter>	
+		</models>
+        <resources>
+            <extensions_store_constantcontact_setup>
+                <setup>
+                    <module>ExtensionsStore_ConstantContact</module>
+                    <class>Mage_Customer_Model_Resource_Setup</class>
+                </setup>
+            </extensions_store_constantcontact_setup>
+        </resources>
+    </global>
+    <default>
+    	<extensions_store_constantcontact>
+    		<configuration>
+    			<enabled>0</enabled>
+    			<rate_limit_per_day>10000</rate_limit_per_day>
+    			<sync_subscribers>0</sync_subscribers>
+    		</configuration>
+    	</extensions_store_constantcontact>
+    </default>     
+</config>
